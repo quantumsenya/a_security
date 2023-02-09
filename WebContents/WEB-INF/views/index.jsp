@@ -26,3 +26,8 @@
 
 
 <%@ include file="layout/footer.jsp" %>
+
+<script>
+	let loginOn = "${loginOn}"
+	if(loginOn!='') alert(loginOn);
+</script>

@@ -3,6 +3,7 @@ package com.jafa.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -38,6 +39,7 @@ public class SecurityExamController {
 		log.info("로그인한 사용자만 접근 가능");
 	}
 	
+	@PreAuthorize("hasAnyRole('ROLE_REGULAR_MEMBER','ROLE_ASSOCIATE_MEMBER')")
 	@GetMapping("/admin")
 	public void doAdmin(Model model) {
 		log.info("관리자만 접근가능");
@@ -54,8 +56,13 @@ public class SecurityExamController {
 	
 	// 로그인 페이지 
 	@RequestMapping("/login")
-	public void login() {
+	public String login(Authentication authentication, RedirectAttributes rttr) {
 		log.info("로그인 페이지");
+		if(authentication!=null && authentication.isAuthenticated()) { // 인증된 사용자가 있을 때 
+			rttr.addFlashAttribute("loginOn", "이미 로그인한 상태입니다.");
+			return "redirect:/";
+		}
+		return "/member/login";
 	}
 	
 	// 회원가입폼
@@ -72,7 +79,8 @@ public class SecurityExamController {
 	}
 	
 	// 회원등급변경 
-	@PostMapping("/upadteMemberType")
+	@PreAuthorize("hasAnyRole('ROLE_REGULAR_MEMBER','ROLE_ASSOCIATE_MEMBER')")
+	@PostMapping("/updateMemberType")
 	public String updateMemberType(AuthListDTO authListDTO, RedirectAttributes rttr) {
 		log.info(authListDTO.getAuthList());
 		List<AuthVO> authList = authListDTO.getAuthList();
@@ -86,6 +94,7 @@ public class SecurityExamController {
 	}
 	
 	// Authentication : 인증된 사용자의정보가 담겨 있는 객체 
+	@PreAuthorize("isAuthenticated()") // 인증된 사용자 
 	@GetMapping("/mypage")
 	public String myPage(Authentication  auth, Model model) {
 		log.info("로그인한 사용자만 접근 가능");
